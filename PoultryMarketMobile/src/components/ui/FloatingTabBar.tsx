@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TouchableOpacity, Text } from 'react-native';
+import { View, TouchableOpacity, Text, Animated } from 'react-native';
 import { styled } from 'nativewind';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -16,16 +16,20 @@ interface TabItem {
 }
 
 interface FloatingTabBarProps {
+  state: any;
+  descriptors: any;
+  navigation: any;
   tabs: TabItem[];
-  activeTab: string;
-  onTabPress: (tabName: string) => void;
 }
 
 export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
+  state,
+  descriptors,
+  navigation,
   tabs,
-  activeTab,
-  onTabPress,
 }) => {
+  const activeTab = state.routes[state.index].name;
+
   return (
     <StyledView className="absolute bottom-6 left-4 right-4">
       <BlurView intensity={80} className="rounded-3xl overflow-hidden">
@@ -36,7 +40,17 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
           {tabs.map((tab) => (
             <StyledTouchableOpacity
               key={tab.name}
-              onPress={() => onTabPress(tab.name)}
+              onPress={() => {
+                const event = navigation.emit({
+                  type: 'tabPress',
+                  target: state.routes[index].key,
+                  canPreventDefault: true,
+                });
+
+                if (!event.defaultPrevented) {
+                  navigation.navigate(state.routes[index].name);
+                }
+              }}
               className={`
                 flex-1 items-center py-2 px-3 rounded-2xl mx-1
                 ${activeTab === tab.name ? 'bg-white/20' : ''}
